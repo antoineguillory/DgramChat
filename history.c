@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "message.h"
 #include "history.h"
@@ -12,7 +13,7 @@
 
 int put_entry(Message* msg) {
     int fd;
-    if(fd=open(HISTORY_PATH, O_WRONLY)<0){
+    if((fd=open(HISTORY_PATH, O_WRONLY))<0){
         fprintf(stderr, "Failed to open History\n");
         return -1;
     }
@@ -23,6 +24,7 @@ int put_entry(Message* msg) {
     bufsender = concat(bufsender,"): ");
     strcpy(bufmsg,msg->message);
     finalbuf = concat(bufsender,bufmsg);
+    finalbuf = concat(finalbuf,CARRIAGE_RETURN);
     if(write(fd,finalbuf,strlen(finalbuf))==-1){
         fprintf(stderr, "Failed to write in history\n");
         return -1;

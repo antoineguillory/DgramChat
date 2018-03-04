@@ -1,5 +1,5 @@
-#ifndef TOOLS_H
-#define TOOLS_H
+#ifndef TOOLSCONCAT_H
+#define TOOLSCONCAT_H
 
 /*
  * Concatène deux buffers

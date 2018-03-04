@@ -4,6 +4,7 @@
 
 #define HISTORY_PATH "./history.log"
 #define FORMAT_NAME_SUPPLEMENT 4 // [{sender}]: ([]: )
+#define CARRIAGE_RETURN "\n"
 
 /*
  * Ajoute une entree dans l'historique
@@ -15,5 +16,6 @@ int put_entry(Message* msg);
  * Recupere les derniers messages
  */
 char* get_history_brief(void);
+
 
 #endif

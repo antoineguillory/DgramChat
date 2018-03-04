@@ -14,3 +14,7 @@ char* concat(char* str1, char* str2){
     strcat(s,str2);
     return s;
 }
+
+char* get_line(int fd){
+    return "";    
+}

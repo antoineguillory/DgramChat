@@ -6,6 +6,7 @@
 
 #include "message.h"
 #include "history.h"
+#include "tools.h"
 
 int main(void){
     printf("(Test écriture fichier log)\n");
