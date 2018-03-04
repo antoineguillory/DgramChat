@@ -1,15 +1,23 @@
 CC = gcc
-CFLAGS = -std=gnu99 -Wall -Wconversion -Werror -Wextra -Wpedantic -fPIC -D_XOPEN_SOURCE=500 -D_FORTIFY_SOURCE
+CFLAGS = -Wall -Wconversion -Werror -Wextra -Wpedantic -fPIC -D_XOPEN_SOURCE=500 -D_FORTIFY_SOURCE
 LDFLAGS = -pthread
 
 all: testhistory
 
 testhistory.o: testhistory.c history.h message.h tools.h
-	$(CC) -c testhistory.c history.h message.h tools.h
+	$(CC) -c $(CFLAGS) testhistory.c
 
-testhistory:
-	$(CC) $(CFLAGS) testhistory.c $(LDFLAGS) -o $@
+history.o: history.c history.h message.h tools.h
+	$(CC) -c $(CFLAGS) history.c
+
+tools.o: tools.c tools.h
+	$(CC) -c $(CFLAGS) tools.c
+
+message.o: message.h
+	$(CC) -c $(CFLAGS) message.h
+
+testhistory: testhistory.o history.o tools.o message.o
+	$(CC) $(CFLAGS) testhistory.c $(LDFLAGS) -o $@ history.o tools.o
 
 clean:
-	$(RM) testhistory.o
-
+	$(RM) *.o
