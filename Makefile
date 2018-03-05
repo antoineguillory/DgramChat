@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wconversion -Werror -Wextra -Wpedantic -fPIC -D_XOPEN_SOURCE=500 -D_FORTIFY_SOURCE
+CFLAGS = -std=gnu99 -Wall -Wconversion -Werror -Wextra -Wpedantic -fPIC -D_FORTIFY_SOURCE
 LDFLAGS = -pthread
 
 all: testhistory

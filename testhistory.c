@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,5 +19,18 @@ int main(void){
     } else {
         printf("Réussite du test\n");
     }
+    printf("(Test récupération de la ligne numéro 1)\n");
+    int fd;
+    if((fd=open(HISTORY_PATH, O_RDONLY))<0){
+        fprintf(stderr, "Failed to open History\n");
+        return -1;
+    }
+    char* buf = get_line(fd,1);
+    if(buf==NULL){
+        printf("Echec du test de lecture\n");
+    }
+    printf("%s\n",buf);
 
+    printf("%ud\n", countlines(HISTORY_PATH));
+    //printf("%s\n", get_history_brief());
 }

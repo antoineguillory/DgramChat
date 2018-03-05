@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
