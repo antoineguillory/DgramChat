@@ -1,0 +1,72 @@
+//
+// Created by zartant on 06/03/18.
+//
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include "addrpool.h"
+
+struct cell_addrpool {
+    cell_addrpool *next;
+    char name[50];
+    struct sockaddr *addr;
+};
+
+typedef struct cell_addrpool cell_addrpool;
+
+struct addrpool {
+    cell_addrpool *list;
+};
+
+addrpool *init_pool(){
+    addrpool *ret = malloc(sizeof(*ret));
+    ret ->list = NULL;
+    return ret;
+}
+int putInPool(addrpool *m, char *user, struct sockaddr *add) {
+    cell_addrpool *c = m -> list;
+    while (c != NULL) {
+        c = c -> next;
+    }
+    c = malloc(sizeof(*c));
+    strncpy(c -> name, user);
+    c -> addr = add;
+    return 0;
+    
+}
+struct sockaddr *get_addr(addrpool *m, char *user) {
+    cell_addrpool *c = m  -> list;
+    while (c != NULL && strcmp(user, c ->name) == 0) {
+        c = c -> next;
+    }
+    if (c == NULL) return NULL;
+    return c -> addr;
+}
+
+bool isInPool(addrpool *m, char *user) {
+    return (get_addr(m, user)) != NULL;
+}
+
+int poolSize(addrpool *m) {
+    cell_addrpool *c = m -> list;
+    int i = 0;
+    while (c != NULL && strcmp(user, c ->name) == 0) {
+        c = c -> next;
+        i++;
+    }
+    return i;
+}
+
+struct sockaddr *get_addr_at(addrpool *m, int at) {
+    cell_addrpool *c = m -> list;
+    int i = 0;
+    while (c != NULL && i <= at) {
+        c = c -> next;
+        i++;
+    }
+    if (c == NULL) return NULL;
+    return c -> addr;
+}
