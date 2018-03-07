@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <sys/select.h>
+#include <pthread.h>
 #include <sys/time.h>
 #include "addrpool.h"
 #include "message.h"
@@ -12,10 +13,25 @@
 
 #define HOST_SIZE_STRING 256
 #define SERVICE_SIZE_STRING 256
+//Je commente car en posix un tel typedef redefinit un autre typedef systeme nomé addrpool...
+//typedef struct addrpool addrpool;
 
-typedef struct addrpool addrpool;
 
-int main(int argc, char* argv[]) {
+typedef struct _Handler_Struct {
+    int sockfd;
+    struct sockaddr* addr;
+    Message* msg;
+} Handler_Struct;
+
+void* handler (void* arg){
+    if(arg==NULL)
+        return NULL;
+    Handler_Struct* hs = (Handler_Struct*)(arg);
+    sendto(hs->sockfd, hs->msg, sizeof(Message), 0, hs->addr, sizeof(struct sockaddr_in));
+    return NULL;
+}
+
+int main(void) {
 
     //Initialisation du socket de reception
     int s;
@@ -68,6 +84,8 @@ int main(int argc, char* argv[]) {
 
         if (m == NULL) continue; // à traiter
 
+        if(retrecv==-1)return EXIT_FAILURE;
+
         char actualsender[50];
 
         //On ajoute au pool l'écrivain si il n'y ai pas déjà
@@ -76,21 +94,27 @@ int main(int argc, char* argv[]) {
             putInPool(ap, actualsender, (struct sockaddr*) &addr_recept);
         }
 
-        
         int sizepool = poolSize(ap);
         //ICI boucle qui énumère toute les adresses du pool.
-        for (int i = 0; i <= sizepool; i++){
+        for (int i = 0; i <= sizepool; ++i){
+            Handler_Struct* hs = malloc(sizeof(struct Handler_Struct*));
             struct sockaddr *ad = get_addr_at(ap, i);
-            //ici t'as une adresse, c'est là qui faut gérer les threads
+            memcpy(hs->addr,ad,sizeof(struct sockaddr));
+            memcpy(hs->msg,m,sizeof(Message));
+            hs->sockfd = s;
+            pthread_t thread=NULL;
+            pthread_detach(thread);
+            if(pthread_create(&thread, NULL, &handler , hs) == -1) {
+                perror("pthread_create");
+                return EXIT_FAILURE;
+            }
         }
     }
-
-
-
     if (close(s) == -1) {
         perror("close");
         return EXIT_FAILURE;
     }
-
     return EXIT_SUCCESS;
 }
+
+
