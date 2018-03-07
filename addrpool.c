@@ -32,6 +32,9 @@ int putInPool(addrpool *m, char *user, struct sockaddr *add) {
         c = c -> next;
     }
     c = malloc(sizeof(*c));
+    if (c == NULL) {
+        return -1;
+    }
     strncpy(c -> name, user);
     c -> addr = add;
     return 0;

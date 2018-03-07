@@ -60,19 +60,23 @@ int main(int argc, char* argv[]) {
     addrpool *ap = init_pool();
     //La boucle principale.
     while (retselect != -1) {
-
+        //On reçoit le message
         Message *m = malloc(sizeof(*m));
         retselect = select(1, &input_set, NULL, NULL, &timeout);
         struct sockaddr_in addr_recept;
         int retrecv = recvfrom(s, m, sizeof(*m), 0, (struct sockaddr*)&addr_recept, NULL);
 
         if (m == NULL) continue; // à traiter
+
         char actualsender[50];
+
+        //On ajoute au pool l'écrivain si il n'y ai pas déjà
         strncpy(actualsender, m -> sender, 50);
         if (!isInPool(ap, actualsender)) {
             putInPool(ap, actualsender, (struct sockaddr*) &addr_recept);
         }
 
+        
         int sizepool = poolSize(ap);
         //ICI boucle qui énumère toute les adresses du pool.
         for (int i = 0; i <= sizepool; i++){
