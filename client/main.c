@@ -34,11 +34,12 @@ void *run (void *arg) {
 
 
 int main() {
-    //Collecte du nom d'utilisateur
+    printf("test1");
     uid_t id = geteuid();
-    struct passwd *info = getpwuid(id);
+    struct passwd *info = malloc(sizeof(*info));
+    info = getpwuid(id);
     char sendername[50];
-    strncpy(sendername, info -> pw_name, 50);
+    strcpy(sendername, info -> pw_name);
 
     //Initialisation de la socket du client
     int s = socket(AF_INET, SOCK_DGRAM, 0);
@@ -46,16 +47,15 @@ int main() {
         perror("primary socket");
         return EXIT_FAILURE;
     }
-
     //Initialisation adresse serveur
-    struct addrinfo *hints = NULL;
-    memset(hints, 0, sizeof(struct addrinfo));
-    hints -> ai_family = AF_INET;
-    hints -> ai_socktype = SOCK_DGRAM;
-
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+    sleep(1);
     struct addrinfo *res;
     int r;
-    if ((r = getaddrinfo(NULL, CHOSEN_PORT, hints, &res)) != 0) {
+    if ((r = getaddrinfo(NULL, CHOSEN_PORT, &hints, &res)) != 0) {
         perror("getaddrinfo");
         return EXIT_FAILURE;
     }
@@ -64,7 +64,6 @@ int main() {
         return EXIT_FAILURE;
     }
     struct sockaddr *server_addr = res -> ai_addr;
-
     //Préparation du thread de réception de message;
     struct argument *arg = malloc(sizeof(*arg));
     arg -> socket = s;
@@ -73,6 +72,8 @@ int main() {
     pthread_attr_t attr_th;
     pthread_attr_init(&attr_th);
     pthread_create(&th, &attr_th, run, arg);
+    printf("test1");
+
     while(1) {
         printf("%s :> ", sendername);
         char data[300];
