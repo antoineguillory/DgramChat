@@ -12,7 +12,7 @@
  * Ajoute une entree dans l'historique
  * @returns -1 si erreur 0 sinon
  */
-int put_entry(Message* msg);
+int put_entry(char *msg);
 
 /*
  * Recupere les derniers messages

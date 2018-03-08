@@ -12,18 +12,27 @@
 #include "tools.h"
 
 
-int put_entry(Message* msg) {
+int put_entry(char  *msg) {
     int fd;
     if((fd=open(HISTORY_PATH, O_WRONLY))<0){
         fprintf(stderr, "Failed to open History\n");
         return -1;
     }
-    char* bufsender = malloc(strlen(msg->sender)+FORMAT_NAME_SUPPLEMENT);
-    char* bufmsg= malloc(strlen(msg->message)+1);
-    char* finalbuf= malloc(strlen(msg->sender)+FORMAT_NAME_SUPPLEMENT+strlen(msg->message)+1);
-    bufsender = concat("(",msg->sender);
+
+
+    char bufsender[50];
+    char bufmsg[300];
+    char finalbuf[351];
+
+    char tmp[351];
+    strcpy(tmp, msg);
+    char* token = strtok(tmp, ";");
+    strcpy(bufsender, token);
+    token = strtok(NULL, ";");
+    strcpy(bufmsg, token);
+
+    bufsender = concat("(",bufsender);
     bufsender = concat(bufsender,"): ");
-    strcpy(bufmsg,msg->message);
     finalbuf = concat(bufsender,bufmsg);
     finalbuf = concat(finalbuf,CARRIAGE_RETURN);
     if(write(fd,finalbuf,strlen(finalbuf))==-1){

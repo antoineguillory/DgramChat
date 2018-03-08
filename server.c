@@ -20,14 +20,14 @@
 typedef struct _Handler_Struct {
     int sockfd;
     struct sockaddr* addr;
-    Message* msg;
+    char msg[350];
 } Handler_Struct;
 
 void* handler (void* arg){
     if(arg==NULL)
         return NULL;
     Handler_Struct* hs = (Handler_Struct*)(arg);
-    sendto(hs->sockfd, hs->msg, sizeof(Message), 0, hs->addr, sizeof(struct sockaddr_in));
+    sendto(hs->sockfd, hs->msg, sizeof(hs->msg), 0, hs->addr, sizeof(struct sockaddr_in));
     return NULL;
 }
 
@@ -77,10 +77,10 @@ int main(void) {
     //La boucle principale.
     while (retselect != -1) {
         //On reçoit le message
-        Message *m = malloc(sizeof(*m));
+        char m[350];
         retselect = select(1, &input_set, NULL, NULL, &timeout);
         struct sockaddr_in addr_recept;
-        int retrecv = recvfrom(s, m, sizeof(*m), 0, (struct sockaddr*)&addr_recept, NULL);
+        int retrecv = (int)recvfrom(s, m, sizeof(m), 0, (struct sockaddr*)&addr_recept, NULL);
 
         if (m == NULL) continue; // à traiter
 
@@ -88,10 +88,17 @@ int main(void) {
 
         char actualsender[50];
 
+        char tmp[350];
+        strcpy(tmp, m);
+        char* token = strtok(tmp, ";");
+        strcpy(actualsender, token);
+        //!!! TODO Penser à l'entrée dans l'historique
+
         //On ajoute au pool l'écrivain si il n'y ai pas déjà
-        strncpy(actualsender, m -> sender, 50);
+
         if (!isInPool(ap, actualsender)) {
             putInPool(ap, actualsender, (struct sockaddr*) &addr_recept);
+            //!!!TODO ENVOYER INFO (30 derniers messages
         }
 
         int sizepool = poolSize(ap);
@@ -100,9 +107,9 @@ int main(void) {
             Handler_Struct* hs = malloc(sizeof(struct Handler_Struct*));
             struct sockaddr *ad = get_addr_at(ap, i);
             memcpy(hs->addr,ad,sizeof(struct sockaddr));
-            memcpy(hs->msg,m,sizeof(Message));
+            strcpy(hs -> msg, m);
             hs->sockfd = s;
-            pthread_t thread=NULL;
+            pthread_t thread;
             pthread_detach(thread);
             if(pthread_create(&thread, NULL, &handler , hs) == -1) {
                 perror("pthread_create");

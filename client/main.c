@@ -23,10 +23,10 @@ struct argument{
 void *run (void *arg) {
     struct argument *info_th = (struct argument *)arg;
     while(1) {
-        Message mess;
+        char mess[350];
         socklen_t size;
-        recvfrom(info_th -> socket, &mess, sizeof(mess), 0, info_th -> addr, &size);
-        printf("%s :> %s", mess . sender, mess . message);
+        recvfrom(info_th -> socket, mess, sizeof(mess), 0, info_th -> addr, &size);
+        printf("%s\n", mess);
     }
 }
 
@@ -34,7 +34,6 @@ void *run (void *arg) {
 
 
 int main() {
-    printf("test1");
     uid_t id = geteuid();
     struct passwd *info = malloc(sizeof(*info));
     info = getpwuid(id);
@@ -63,6 +62,8 @@ int main() {
         perror("getaddrinfo");
         return EXIT_FAILURE;
     }
+
+    freeaddrinfo(res);
     struct sockaddr *server_addr = res -> ai_addr;
     //Préparation du thread de réception de message;
     struct argument *arg = malloc(sizeof(*arg));
@@ -72,16 +73,13 @@ int main() {
     pthread_attr_t attr_th;
     pthread_attr_init(&attr_th);
     pthread_create(&th, &attr_th, run, arg);
-    printf("test1");
 
     while(1) {
-        printf("%s :> ", sendername);
         char data[300];
         scanf("%s", data);
-        Message *mess = malloc(sizeof(*mess));
-        strncpy(mess -> message,data, 300);
-        strncpy(mess -> sender, sendername, 50);
-        sendto(s, mess, sizeof(Message), 0, server_addr, sizeof(struct sockaddr_in));
+        char mess[350];
+        sprintf(mess, "%s;%s", sendername, data);
+        sendto(s, mess, 350, 0, server_addr, sizeof(struct sockaddr_in));
     }
     return 0;
 
