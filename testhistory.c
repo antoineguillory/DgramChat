@@ -11,10 +11,10 @@
 
 int main(void){
     printf("(Test écriture fichier log)\n");
-    Message* msg = malloc(sizeof(Message*)); 
-    msg->sender = "Antoine";
-    msg->message= "Oui bonjour ceci est un test";
-    if(put_entry(msg)==-1){
+    //Message* msg = malloc(sizeof(Message*)); 
+    //strcpy(msg->sender,"Antoine");
+    //strcpy(msg->message,"Oui bonjour ceci est un test");
+    if(put_entry("Antoine; Oui bonjour ceci est un test")==-1){
         printf("Echec du test\n");
     } else {
         printf("Réussite du test\n");
