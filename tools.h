@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
-#ifndef TOOLS_H
-#define TOOLS_H
+#ifndef TOOLS_PROJETRESEAU_H
+#define TOOLS_PROJETRESEAU_H
 
 /*
  * Concatène deux buffers

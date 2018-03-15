@@ -19,5 +19,4 @@ int put_entry(char *msg);
  */
 char* get_history_brief(void);
 
-
 #endif

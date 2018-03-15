@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wconversion -Werror -Wextra -Wpedantic -fPIC -D_POSIX_C_SOURCE=200112L
 LDFLAGS = -pthread
 
-all: client servertest
+all: client
 
 main.o: main.c prompt.h message.h
 	$(CC) -c $(CFLAGS) main.c

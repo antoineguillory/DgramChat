@@ -8,7 +8,10 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include "addrpool.h"
-#include "message.h"
+#include "history.h"
+//#include "message.h"
+#include "tools.h"
+
 #define BUF_SIZE 512
 
 #define HOST_SIZE_STRING 256
@@ -23,7 +26,7 @@ typedef struct _Handler_Struct {
     char msg[350];
 } Handler_Struct;
 
-void* handler (void* arg){
+void* handler_pthread(void* arg){
     if(arg==NULL)
         return NULL;
     Handler_Struct* hs = (Handler_Struct*)(arg);
@@ -64,28 +67,32 @@ int main(void) {
     freeaddrinfo(res);
 
     //Préparation du select
-    fd_set input_set;
+   /* fd_set input_set;
     FD_ZERO(&input_set);
     FD_SET(s, &input_set);
     struct timeval timeout;
-    timeout.tv_sec = 15;
+    timeout.tv_sec = 5;
     timeout.tv_usec = 0;
-    int retselect = 0;
+    int retselect = 0; */
 
     //Init du pool d'adresse
     addrpool *ap = init_pool();
     //La boucle principale.
-    while (retselect != -1) {
+    for(;;) {
         //On reçoit le message
         char m[350];
-        retselect = select(1, &input_set, NULL, NULL, &timeout);
+        //retselect = select(1, &input_set, NULL, NULL, &timeout);
         struct sockaddr_in addr_recept;
-        int retrecv = (int)recvfrom(s, m, sizeof(m), 0, (struct sockaddr*)&addr_recept, NULL);
-
-        if (m == NULL) continue; // à traiter
-
-        if(retrecv==-1)return EXIT_FAILURE;
-
+        socklen_t *csize = malloc(sizeof(*csize));
+        int retrecv = (int)recvfrom(s, m, sizeof(m), 0, (struct sockaddr*)&addr_recept, csize);
+        free(csize);
+        if (m == NULL) {
+            continue; // à traiter
+        }
+        if(retrecv==-1) {
+            perror("retrecv");
+            return EXIT_FAILURE;
+        }
         char actualsender[50];
 
         char tmp[350];
@@ -98,7 +105,17 @@ int main(void) {
 
         if (!isInPool(ap, actualsender)) {
             putInPool(ap, actualsender, (struct sockaddr*) &addr_recept);
-            //!!!TODO ENVOYER INFO (30 derniers messages
+            //!!!TODO ENVOYER INFO (30 derniers messages)
+            char histobrief[8192];
+            strcpy(histobrief,get_history_brief());
+            if(histobrief==NULL){
+                fprintf(stderr, "Failed to retrieve history\n");
+            }
+            socklen_t socksize = sizeof(get_addr(ap,actualsender));
+            if(sendto(s,histobrief,strlen(histobrief),0,get_addr( ap, actualsender),socksize)==-1){
+                fprintf(stderr, "Failed to send history brief\n");
+            }
+            
         }
 
         int sizepool = poolSize(ap);
@@ -111,7 +128,7 @@ int main(void) {
             hs->sockfd = s;
             pthread_t thread;
             pthread_detach(thread);
-            if(pthread_create(&thread, NULL, &handler , hs) == -1) {
+            if(pthread_create(&thread, NULL, &handler_pthread , hs) == -1) {
                 perror("pthread_create");
                 return EXIT_FAILURE;
             }

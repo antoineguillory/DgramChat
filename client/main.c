@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include "message.h"
 
-#define CHOSEN_PORT "45532"
+#define CHOSEN_PORT "50000"
 
 
 struct argument{
@@ -64,6 +64,8 @@ int main() {
     }
 
     freeaddrinfo(res);
+    
+    
     struct sockaddr *server_addr = res -> ai_addr;
     //Préparation du thread de réception de message;
     struct argument *arg = malloc(sizeof(*arg));

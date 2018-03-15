@@ -12,7 +12,6 @@
 #include "history.h"
 #include "tools.h"
 
-
 int put_entry(char *msg) {
     int fd;
     //On ne veut pas que deux fichiers écrivent en meme temps

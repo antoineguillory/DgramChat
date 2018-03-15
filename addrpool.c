@@ -15,7 +15,7 @@ struct cell_addrpool {
     struct sockaddr *addr;
 };
 
-typedef struct cell_addrpool cell_addrpool;
+
 
 struct addrpool {
     cell_addrpool *list;
@@ -35,7 +35,7 @@ int putInPool(addrpool *m, char *user, struct sockaddr *add) {
     if (c == NULL) {
         return -1;
     }
-    strncpy(c -> name, user);
+    strcpy(c -> name, user);
     c -> addr = add;
     return 0;
     
@@ -56,7 +56,7 @@ bool isInPool(addrpool *m, char *user) {
 int poolSize(addrpool *m) {
     cell_addrpool *c = m -> list;
     int i = 0;
-    while (c != NULL && strcmp(user, c ->name) == 0) {
+    while (c != NULL) {
         c = c -> next;
         i++;
     }

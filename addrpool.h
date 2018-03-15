@@ -6,27 +6,14 @@
  *
  *
  */
-
 #ifndef PROJETRESEAU_ADDRPOOL_H
 #define PROJETRESEAU_ADDRPOOL_H
 
 #include <stdlib.h>
 #include <stdbool.h>
 //J'ajoute les définitions complètes par soucis de compilation, mais il faudrait à l'idéal les retirer pour le .c
+
 typedef struct cell_addrpool cell_addrpool;
-struct cell_addrpool {
-    cell_addrpool *next;
-    char name[50];
-    struct sockaddr *addr;
-};
-
-
-
-struct addrpool {
-    cell_addrpool *list;
-};
-
-
 
 typedef struct addrpool addrpool;
 

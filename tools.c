@@ -6,10 +6,14 @@
 #include "tools.h"
 
 char* concat(char* str1, char* str2){
+    if(str1==NULL || str2==NULL){
+        perror("null str");
+        return NULL;
+    }
     char *s = malloc(strlen(str1)+strlen(str2)+1);
     if(s==NULL){
         perror("malloc");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
     strcpy(s,str1);
     strcat(s,str2);
