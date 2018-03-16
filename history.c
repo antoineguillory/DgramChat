@@ -52,21 +52,27 @@ char* get_history_brief(void) {
     sem_t semhistory;
     sem_init(&semhistory, 0, 1);
     sem_wait(&semhistory);
+    printf("semaphore initialisée. \n");
     int fd;
-    char* buf = malloc(2048);
+    char* buf = malloc(8192);
+    printf("gros malloc passé. \n");
     if((fd=open(HISTORY_PATH, O_RDONLY))<0){
         fprintf(stderr, "Failed to open History\n");
         return NULL;
     }
+    printf("open ok. \n");
     unsigned int count=0;
     if((count=countlines(HISTORY_PATH))==0){
         return NULL;
     }
+    printf("countline ok. %d lignes\n",count);
     for(unsigned int i=count-HISTORY_LINE_SAMPLE; i!=count; ++i){
+        
         if(realloc(buf, strlen(buf)+strlen(get_line(fd,i))+1)==(void*)-1)
             return NULL;
         concat(buf,get_line(fd,i));
     }
+    printf("realloc+concat ok. \n");
     sem_post(&semhistory);
     sem_destroy(&semhistory);
     return buf;

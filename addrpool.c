@@ -1,6 +1,3 @@
-//
-// Created by zartant on 06/03/18.
-//
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,8 +12,6 @@ struct cell_addrpool {
     struct sockaddr *addr;
 };
 
-
-
 struct addrpool {
     cell_addrpool *list;
 };
@@ -26,7 +21,9 @@ addrpool *init_pool(){
     ret ->list = NULL;
     return ret;
 }
+
 int putInPool(addrpool *m, char *user, struct sockaddr *add) {
+    printf("Addr pool put started with user %s\n",user);
     cell_addrpool *c = m -> list;
     while (c != NULL) {
         c = c -> next;
@@ -35,10 +32,9 @@ int putInPool(addrpool *m, char *user, struct sockaddr *add) {
     if (c == NULL) {
         return -1;
     }
-    strcpy(c -> name, user);
+    strncpy(c->name, user, strlen(user));
     c -> addr = add;
     return 0;
-    
 }
 struct sockaddr *get_addr(addrpool *m, char *user) {
     cell_addrpool *c = m  -> list;
@@ -58,7 +54,7 @@ int poolSize(addrpool *m) {
     int i = 0;
     while (c != NULL) {
         c = c -> next;
-        i++;
+        ++i;
     }
     return i;
 }
@@ -68,7 +64,7 @@ struct sockaddr *get_addr_at(addrpool *m, int at) {
     int i = 0;
     while (c != NULL && i <= at) {
         c = c -> next;
-        i++;
+        ++i;
     }
     if (c == NULL) return NULL;
     return c -> addr;

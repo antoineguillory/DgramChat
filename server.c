@@ -84,30 +84,34 @@ int main(void) {
         //retselect = select(1, &input_set, NULL, NULL, &timeout);
         struct sockaddr_in addr_recept;
         socklen_t *csize = malloc(sizeof(*csize));
+        printf("j'attend un message...\n");
         int retrecv = (int)recvfrom(s, m, sizeof(m), 0, (struct sockaddr*)&addr_recept, csize);
         free(csize);
-        if (m == NULL) {
-            continue; // à traiter
-        }
         if(retrecv==-1) {
             perror("retrecv");
             return EXIT_FAILURE;
+        } else {
+            printf("recu %s : \n",m);
+        }
+        if (m == NULL) {
+            continue; // à traiter
         }
         char actualsender[50];
-
         char tmp[350];
         strcpy(tmp, m);
         char* token = strtok(tmp, ";");
         strcpy(actualsender, token);
         //!!! TODO Penser à l'entrée dans l'historique
-
         //On ajoute au pool l'écrivain si il n'y ai pas déjà
-
+        printf("test isinpool\n");
         if (!isInPool(ap, actualsender)) {
+            printf("on ajoute %s au pool\n", actualsender);
             putInPool(ap, actualsender, (struct sockaddr*) &addr_recept);
+            printf("put in pool fonctionnel\n");
             //!!!TODO ENVOYER INFO (30 derniers messages)
             char histobrief[8192];
-            strcpy(histobrief,get_history_brief());
+            printf("History brief ressemble a ça : %s\n", histobrief);
+            strncpy(histobrief,get_history_brief(), strlen(get_history_brief()));
             if(histobrief==NULL){
                 fprintf(stderr, "Failed to retrieve history\n");
             }
@@ -115,9 +119,7 @@ int main(void) {
             if(sendto(s,histobrief,strlen(histobrief),0,get_addr( ap, actualsender),socksize)==-1){
                 fprintf(stderr, "Failed to send history brief\n");
             }
-            
         }
-
         int sizepool = poolSize(ap);
         //ICI boucle qui énumère toute les adresses du pool.
         for (int i = 0; i <= sizepool; ++i){
