@@ -25,7 +25,7 @@ int main(void){
         fprintf(stderr, "Failed to open History\n");
         return -1;
     }
-    char* buf = get_line(fd,1);
+    char* buf = get_line(fd,5);
     if(buf==NULL){
         printf("Echec du test de lecture\n");
     }

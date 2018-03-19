@@ -20,17 +20,21 @@ char* concat(char* str1, char* str2){
     return s;
 }
 
-char* get_line(int fd, unsigned int linenumber){
+char* get_line(unsigned int linenumber){
     char* ptr = malloc(2048);
     char* buf = malloc(65536);
     size_t size = 0;
-    FILE* fdf = fdopen(fd,"r");
+    FILE* fdf = fopen("history.log","r");
     if(fdf==NULL){
+	perror("fdf");
         return NULL;
     }
     for(unsigned int i=0; i!=linenumber; ++i){
         ptr = NULL;
-        getline(&ptr,&size,fdf);
+        if(getline(&ptr,&size,fdf)==-1){
+	   perror("getline");
+	   return NULL;
+	}
         strcpy(buf,concat(buf,ptr));
     }
     fclose(fdf);
