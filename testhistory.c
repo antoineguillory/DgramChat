@@ -10,7 +10,7 @@
 #include "tools.h"
 
 int main(void){
-    printf("(Test écriture fichier log)\n");
+    /*printf("(Test écriture fichier log)\n");
     //Message* msg = malloc(sizeof(Message*)); 
     //strcpy(msg->sender,"Antoine");
     //strcpy(msg->message,"Oui bonjour ceci est un test");
@@ -32,5 +32,12 @@ int main(void){
     printf("%s\n",buf);
 
     printf("%ud\n", countlines(HISTORY_PATH));
-    //printf("%s\n", get_history_brief());
+    //printf("%s\n", get_history_brief()); 
+    char buf[strlen(get_line(20))];
+    printf("Test getLine");
+    printf("%s\n",get_line(20));
+    printf("Test cpy buf");
+    memcpy(buf,get_line(20),strlen(get_line(20)));
+    printf("%s\n",buf); */
+    printf("%s\n", get_history_brief());
 }

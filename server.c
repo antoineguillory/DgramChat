@@ -110,8 +110,8 @@ int main(void) {
             printf("put in pool fonctionnel\n");
             //!!!TODO ENVOYER INFO (30 derniers messages)
             char histobrief[8192];
-            printf("History brief ressemble a ça : %s\n", histobrief);
             strncpy(histobrief,get_history_brief(), strlen(get_history_brief()));
+            printf("History brief ressemble a ça : %s\n", histobrief);
             if(histobrief==NULL){
                 fprintf(stderr, "Failed to retrieve history\n");
             }

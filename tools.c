@@ -22,7 +22,7 @@ char* concat(char* str1, char* str2){
 
 char* get_line(unsigned int linenumber){
     char* ptr = malloc(2048);
-    char* buf = malloc(65536);
+    char* buf = malloc(2048);
     size_t size = 0;
     FILE* fdf = fopen("history.log","r");
     if(fdf==NULL){
