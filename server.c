@@ -116,7 +116,12 @@ int main(void) {
                 fprintf(stderr, "Failed to retrieve history\n");
             }
             socklen_t socksize = sizeof(get_addr(ap,actualsender));
-            if(sendto(s,histobrief,strlen(histobrief),0,get_addr( ap, actualsender),socksize)==-1){
+			printf("try to get addr...\n");
+			struct sockaddr* sockrespond;
+			if((sockrespond=get_addr(ap,actualsender))==NULL){
+				printf("failed to get addr..\n");
+			}
+            if(sendto(s,histobrief,strlen(histobrief),0,get_addr(ap, actualsender),socksize)==-1){
                 fprintf(stderr, "Failed to send history brief\n");
             }
         }

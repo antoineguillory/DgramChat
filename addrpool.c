@@ -24,21 +24,24 @@ addrpool *init_pool(){
 
 int putInPool(addrpool *m, char *user, struct sockaddr *add) {
     printf("Addr pool put started with user %s\n",user);
-    cell_addrpool *c = m -> list;
-    while (c != NULL) {
-        c = c -> next;
-    }
-    c = malloc(sizeof(*c));
+    cell_addrpool *c = malloc(sizeof(*c));
     if (c == NULL) {
         return -1;
     }
-    strncpy(c->name, user, strlen(user));
+    strcpy(c -> name, user);
     c -> addr = add;
+    if (m -> list != NULL) {
+		c -> next = m -> list;
+	} else {
+		c -> next = NULL;
+	}
+	m -> list = c;
     return 0;
 }
 struct sockaddr *get_addr(addrpool *m, char *user) {
     cell_addrpool *c = m  -> list;
-    while (c != NULL && strcmp(user, c ->name) == 0) {
+    printf("%s, %s", user, c -> name);
+    while (c != NULL && strcmp(user, c ->name) != 0) {
         c = c -> next;
     }
     if (c == NULL) return NULL;
