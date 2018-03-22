@@ -40,7 +40,6 @@ int putInPool(addrpool *m, char *user, struct sockaddr *add) {
 }
 struct sockaddr *get_addr(addrpool *m, char *user) {
     cell_addrpool *c = m  -> list;
-    printf("%s, %s", user, c -> name);
     while (c != NULL && strcmp(user, c ->name) != 0) {
         c = c -> next;
     }
