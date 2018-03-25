@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/select.h>
 #include <pthread.h>
@@ -38,55 +40,30 @@ int main(void) {
 
     //Initialisation du socket de reception
     int s;
-    if ((s = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+    if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
         perror("socket");
         return EXIT_FAILURE;
     }
 
-    //Recherche d'adresse valable
-    struct addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags = AI_PASSIVE;
-    struct addrinfo *res;
-    int r;
-    if ((r = getaddrinfo(NULL, "50000", &hints, &res)) != 0) {
-        fprintf(stderr, "getaddrinfo(): %s\n", gai_strerror(s));
-        exit(EXIT_FAILURE);
-    }
-    if (res == NULL) {
-        fprintf(stderr, "Erreur lors de la construction de l'adresse\n");
-        exit(EXIT_FAILURE);
-    }
-    //On bind cette adresse au socket
-    if (bind(s, (struct sockaddr*) res->ai_addr, sizeof(struct sockaddr)) == -1) {
+
+	struct sockaddr_in server;
+	server.sin_family = AF_INET;
+	server.sin_port = htons(50000);
+	server.sin_addr.s_addr = INADDR_ANY;
+    if (bind(s, (struct sockaddr*) /*res->ai_addr*/&server, sizeof(struct sockaddr)) == -1) {
         perror("bind");
         return EXIT_FAILURE;
     }
-    freeaddrinfo(res);
-
-    //Préparation du select
-   /* fd_set input_set;
-    FD_ZERO(&input_set);
-    FD_SET(s, &input_set);
-    struct timeval timeout;
-    timeout.tv_sec = 5;
-    timeout.tv_usec = 0;
-    int retselect = 0; */
-
-    //Init du pool d'adresse
     addrpool *ap = init_pool();
-    //La boucle principale.
     for(;;) {
         //On reçoit le message
         char m[350];
         //retselect = select(1, &input_set, NULL, NULL, &timeout);
         struct sockaddr_in addr_recept;
-        socklen_t *csize = malloc(sizeof(*csize));
+        socklen_t *csize = malloc(sizeof(&addr_recept));
         printf("j'attend un message...\n");
         int retrecv = (int)recvfrom(s, m, sizeof(m), 0, (struct sockaddr*)&addr_recept, csize);
-        free(csize);
+		free(csize);
         if(retrecv==-1) {
             perror("retrecv");
             return EXIT_FAILURE;
@@ -101,7 +78,6 @@ int main(void) {
         strcpy(tmp, m);
         char* token = strtok(tmp, ";");
         strcpy(actualsender, token);
-        //!!! TODO Penser à l'entrée dans l'historique
         //On ajoute au pool l'écrivain si il n'y ai pas déjà
         printf("test isinpool\n");
         if (!isInPool(ap, actualsender)) {
@@ -111,19 +87,25 @@ int main(void) {
             //!!!TODO ENVOYER INFO (30 derniers messages)
             char histobrief[8192];
             strncpy(histobrief,get_history_brief(), strlen(get_history_brief()));
-            printf("History brief ressemble a ça : %s\n", histobrief);
             if(histobrief==NULL){
                 fprintf(stderr, "Failed to retrieve history\n");
             }
-            socklen_t socksize = sizeof(get_addr(ap,actualsender));
+
 			printf("try to get addr...\n");
-			struct sockaddr* sockrespond;
-			if((sockrespond=get_addr(ap,actualsender))==NULL){
+			struct sockaddr *sockrespond;
+			if(( sockrespond=get_addr(ap,actualsender))==NULL){
 				printf("failed to get addr..\n");
 			}
-            if(sendto(s,histobrief,strlen(histobrief),0,get_addr(ap, actualsender),socksize)==-1){
+			sockrespond->sa_family = AF_INET;
+			socklen_t socksize = sizeof(*sockrespond);
+			printf("size = %zu\n",socksize);
+			
+            if(sendto(s,histobrief,strlen(histobrief)+1,0,sockrespond,socksize)==-1){
                 fprintf(stderr, "Failed to send history brief\n");
+				perror("sendto");
+				exit(EXIT_FAILURE);
             }
+			printf("sendto passé.\n");
         }
         int sizepool = poolSize(ap);
         //ICI boucle qui énumère toute les adresses du pool.
