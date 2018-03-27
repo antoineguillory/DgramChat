@@ -23,15 +23,13 @@ struct argument{
 void *run (void *arg) {
     struct argument *info_th = (struct argument *)arg;
     while(1) {
-        char mess[350];
+        char mess[8196];
         socklen_t size;
+		printf("fdfdssdf\n");
         recvfrom(info_th -> socket, mess, sizeof(mess), 0, info_th -> addr, &size);
         printf("%s\n", mess);
     }
 }
-
-
-
 
 int main() {
     uid_t id = geteuid();
