@@ -109,14 +109,28 @@ int main(void) {
         }
         int sizepool = poolSize(ap);
         //ICI boucle qui énumère toute les adresses du pool.
-        for (int i = 0; i <= sizepool; ++i){
+        for (int i = 0; i < sizepool; ++i){
+			printf("envoi aux clients (%d)\n",sizepool);
             Handler_Struct* hs = malloc(sizeof(struct Handler_Struct*));
+			hs->addr = malloc(sizeof(struct sockaddr_in));
+			if(hs==NULL){
+				perror("hs");
+				exit(EXIT_FAILURE);
+			}
             struct sockaddr *ad = get_addr_at(ap, i);
-            memcpy(hs->addr,ad,sizeof(struct sockaddr));
+			if(ad==NULL){
+				exit(EXIT_FAILURE);
+			}
+			printf("getaddrat ok\n");
+            memcpy(hs->addr,ad,sizeof(struct sockaddr_in));
+			printf("memcpY ok\n");
             strcpy(hs -> msg, m);
+
             hs->sockfd = s;
-            pthread_t thread;
+            printf("strcpy ok\n");
+			pthread_t thread;
             pthread_detach(thread);
+			printf("detach state ok\n");
             if(pthread_create(&thread, NULL, &handler_pthread , hs) == -1) {
                 perror("pthread_create");
                 return EXIT_FAILURE;

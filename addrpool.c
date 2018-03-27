@@ -31,6 +31,7 @@ int putInPool(addrpool *m, char *user, struct sockaddr *add) {
     strcpy(c -> name, user);
     c -> addr = add;
     if (m -> list != NULL) {
+		
 		c -> next = m -> list;
 	} else {
 		c -> next = NULL;
@@ -40,10 +41,15 @@ int putInPool(addrpool *m, char *user, struct sockaddr *add) {
 }
 struct sockaddr *get_addr(addrpool *m, char *user) {
     cell_addrpool *c = m  -> list;
+	printf("cell ok\n");
     while (c != NULL && strcmp(user, c ->name) != 0) {
-        c = c -> next;
+        printf("enter the while with name %s\n",c->name);
+		c = c -> next;
+		printf("next\n");
     }
+	printf("sortie du while\n");
     if (c == NULL) return NULL;
+	printf("c n est pas null\n");
     return c -> addr;
 }
 
@@ -64,7 +70,7 @@ int poolSize(addrpool *m) {
 struct sockaddr *get_addr_at(addrpool *m, int at) {
     cell_addrpool *c = m -> list;
     int i = 0;
-    while (c != NULL && i <= at) {
+    while (c != NULL && i < at) {
         c = c -> next;
         ++i;
     }
