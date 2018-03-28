@@ -23,13 +23,24 @@ struct argument{
 void *run (void *arg) {
     struct argument *info_th = (struct argument *)arg;
     while(1) {
-        char mess[8196];
-        socklen_t size;
-        size_t sizemsg = sizeof(8196);
-        printf("Entrée dans le thread ok\n");
-        recvfrom(info_th -> socket, mess, sizemsg, 0, (struct sockaddr*)info_th -> addr, &size);
+        char mess[4096];
+        mess[4095] = 0;
+        struct sockaddr_in addr_from;
+        socklen_t addr_len = sizeof(addr_from);
+        int r = 0;
+        r = (int)recvfrom(info_th -> socket, mess, sizeof(mess) - 1, 0, (struct sockaddr *)&addr_from, &addr_len);
+        
+        if (r < 0) {
+			printf("Error msg\n");
+		} else if (r == 0) {
+			printf("Server Close\n");
+			exit(EXIT_SUCCESS);
+		} else {
+			mess[r] = '\0';
+		}
+        
         printf("%s\n", mess);
-        printf("%d <- la TAILLE\n",(int)size);
+        printf("%d <- la TAILLE\n", (int) strlen(mess));
     }
 }
 

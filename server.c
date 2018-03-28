@@ -24,7 +24,7 @@
 
 typedef struct _Handler_Struct {
     int sockfd;
-    struct sockaddr* addr;
+    struct sockaddr_in *addr;
     char msg[350];
 } Handler_Struct;
 
@@ -32,7 +32,9 @@ void* handler_pthread(void* arg){
     if(arg==NULL)
         return NULL;
     Handler_Struct* hs = (Handler_Struct*)(arg);
-    sendto(hs->sockfd, hs->msg, sizeof(hs->msg), 0, hs->addr, sizeof(struct sockaddr_in));
+    size_t size = strlen(hs->msg);
+    socklen_t adsize = sizeof(struct sockaddr_in);
+    sendto(hs->sockfd, hs->msg, size, 0, (struct sockaddr *)hs->addr, adsize );
     return NULL;
 }
 
@@ -45,15 +47,34 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    struct sockaddr_in server;
+    /*struct sockaddr_in server;
     server.sin_family = AF_INET;
     server.sin_port = htons(50000);
-    server.sin_addr.s_addr = htonl(INADDR_ANY);
+    server.sin_addr.s_addr = htonl(INADDR_ANY);*/
+  
+    // On construit l'adresse de notre serveur.
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_PASSIVE;
+    struct addrinfo *res;
+    int r;
+    if ((r = getaddrinfo(NULL, "50000", &hints, &res)) != 0) {
+        fprintf(stderr, "getaddrinfo(): %s\n", gai_strerror(s));
+        exit(EXIT_FAILURE);
+    }
+    if (res == NULL) {
+        fprintf(stderr, "Erreur lors de la construction de l'adresse\n");
+        exit(EXIT_FAILURE);
+    }
 
-    if (bind(s, (struct sockaddr*) &server, sizeof(struct sockaddr_in)) == -1) {
+    // On affecte l'adresse à notre serveur
+    if (bind(s, (struct sockaddr*) res->ai_addr, sizeof(struct sockaddr)) == -1) {
         perror("bind");
         return EXIT_FAILURE;
     }
+    freeaddrinfo(res);
     addrpool *ap = init_pool();
     for( ; ; ) {
         //On reçoit le message
@@ -91,7 +112,7 @@ int main(void) {
             if(histobrief==NULL){
                 fprintf(stderr, "Failed to retrieve history\n");
             }
-            
+            printf("%zu", histosize);
             printf("try to get addr...\n");
             struct sockaddr *sockrespond;
             if(( sockrespond=get_addr(ap,actualsender))==NULL){
@@ -102,12 +123,13 @@ int main(void) {
             //sockrespond->sa_port = 
             socklen_t socksize = sizeof(struct sockaddr_in);
             printf("size = %zu\n",(size_t)socksize);
-            if(sendto(s,histobrief,histosize,0,sockrespond,socksize)==-1){
+            int r;
+            if((r = (int)sendto(s,histobrief,histosize,0,sockrespond,socksize))==-1){
                 fprintf(stderr, "Failed to send history brief\n");
                 perror("sendto");
                 exit(EXIT_FAILURE);
             }
-            printf("sendto passé.\n");
+            printf("sendto passé with %d.\n", r);
             }
             int sizepool = poolSize(ap);
             //ICI boucle qui énumère toute les adresses du pool.
@@ -131,10 +153,23 @@ int main(void) {
 
             hs->sockfd = s;
             printf("strcpy ok\n");
+            //sizeof(struct sockaddr_in)
+            pthread_attr_t attr;
+            int errnum;
+			if ((errnum = pthread_attr_init(&attr)) != 0) {
+				fprintf(stderr, "pthread_attr_init: %s\n", strerror(errnum));
+			    exit(EXIT_FAILURE);
+			}
+			    
+			if ((errnum = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED)) != 0) {
+			    fprintf(stderr, "pthread_attr_setdetachstate: %s\n", strerror(errnum));
+			    exit(EXIT_FAILURE);
+			}
+			  
             pthread_t thread;
-            pthread_detach(thread);
+            //pthread_detach(thread);
             printf("detach state ok\n");
-            if(pthread_create(&thread, NULL, &handler_pthread , hs) == -1) {
+            if(pthread_create(&thread, &attr, &handler_pthread , hs) == -1) {
                 perror("pthread_create");
                 return EXIT_FAILURE;
             }
