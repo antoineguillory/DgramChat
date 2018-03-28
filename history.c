@@ -54,30 +54,16 @@ char* get_history_brief(void) {
     sem_init(&semhistory, 0, 1);
     sem_wait(&semhistory);
     char *cmd = "tail -n 30 history.log 2> /dev/null";
-    char buf[8192];
+    char buf[8192] = "";
     FILE *fp;
     if ((fp = popen(cmd, "r")) == NULL) {
         printf("popen error\n");
         return NULL;
     }
-    /*char buf[4096];
-    unsigned int count=0;
-    if((count=countlines(HISTORY_PATH))==0){
-        return NULL;
-    }
-    printf("countline ok. %d lignes\n",count);
-    for(unsigned int i=count-HISTORY_LINE_SAMPLE; i!=count; ++i){
-        concat(buf,get_line(i));
-        printf("BUF : %s\n",buf);
-    }
-    char* truebuf = malloc(strlen(buf));
-    strcpy(truebuf,buf);
-    printf("History brief : %s\n",buf);
-    return truebuf;*/
     char currentchar;
     while ((currentchar=(char)fgetc(fp)) != EOF) {
         char tmp[2];
-        tmp[0]=currentchar;
+        tmp[0]= currentchar;
         tmp[1]='\0';
         strncat(buf,tmp,2);
     }

@@ -40,17 +40,16 @@ int main(void) {
 
     //Initialisation du socket de reception
     int s;
-    if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+    if ((s = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
         perror("socket");
         return EXIT_FAILURE;
     }
 
-
-	struct sockaddr_in server;
-	server.sin_family = AF_INET;
-	server.sin_port = htons(50000);
-	server.sin_addr.s_addr = INADDR_ANY;
-    if (bind(s, (struct sockaddr*) /*res->ai_addr*/&server, sizeof(struct sockaddr)) == -1) {
+    struct sockaddr_in server;
+    server.sin_family = AF_INET;
+    server.sin_port = htons(50000);
+    server.sin_addr.s_addr = INADDR_ANY;
+    if (bind(s, (struct sockaddr*) &server, sizeof(struct sockaddr)) == -1) {
         perror("bind");
         return EXIT_FAILURE;
     }
@@ -58,12 +57,12 @@ int main(void) {
     for(;;) {
         //On reçoit le message
         char m[350];
-        //retselect = select(1, &input_set, NULL, NULL, &timeout);
         struct sockaddr_in addr_recept;
         socklen_t *csize = malloc(sizeof(&addr_recept));
         printf("j'attend un message...\n");
         int retrecv = (int)recvfrom(s, m, sizeof(m), 0, (struct sockaddr*)&addr_recept, csize);
-		free(csize);
+        printf("addresse = %s\n", inet_ntoa(addr_recept.sin_addr));
+        free(csize);
         if(retrecv==-1) {
             perror("retrecv");
             return EXIT_FAILURE;
@@ -81,56 +80,60 @@ int main(void) {
         //On ajoute au pool l'écrivain si il n'y ai pas déjà
         printf("test isinpool\n");
         if (!isInPool(ap, actualsender)) {
+            //Si l'écrivain n'est pas dans le pool on l'ajoute dedans
             printf("on ajoute %s au pool\n", actualsender);
             putInPool(ap, actualsender, (struct sockaddr*) &addr_recept);
-            printf("put in pool fonctionnel\n");
             //!!!TODO ENVOYER INFO (30 derniers messages)
-            char histobrief[8192];
-            strncpy(histobrief,get_history_brief(), strlen(get_history_brief()));
+            
+            //Récupération de l'historique pour l'envoyer a l'écrivain
+            char* histobrief = get_history_brief();
+            size_t histosize = strlen(histobrief);
             if(histobrief==NULL){
                 fprintf(stderr, "Failed to retrieve history\n");
             }
-
-			printf("try to get addr...\n");
-			struct sockaddr *sockrespond;
-			if(( sockrespond=get_addr(ap,actualsender))==NULL){
-				printf("failed to get addr..\n");
-			}
-			sockrespond->sa_family = AF_INET;
-			socklen_t socksize = sizeof(*sockrespond);
-			printf("size = %zu\n",socksize);
-			
-            if(sendto(s,histobrief,strlen(histobrief)+1,0,sockrespond,socksize)==-1){
-                fprintf(stderr, "Failed to send history brief\n");
-				perror("sendto");
-				exit(EXIT_FAILURE);
+            
+            
+            printf("try to get addr...\n");
+            struct sockaddr *sockrespond;
+            if(( sockrespond=get_addr(ap,actualsender))==NULL){
+                printf("failed to get addr..\n");
             }
-			printf("sendto passé.\n");
-        }
-        int sizepool = poolSize(ap);
-        //ICI boucle qui énumère toute les adresses du pool.
-        for (int i = 0; i < sizepool; ++i){
-			printf("envoi aux clients (%d)\n",sizepool);
+            printf("addresse = %s\n", inet_ntoa(((struct sockaddr_in *) sockrespond) -> sin_addr));
+            sockrespond->sa_family = AF_INET;
+            //sockrespond->sa_port = 
+            socklen_t socksize = sizeof(struct sockaddr_in);
+            printf("size = %zu\n",(size_t)socksize);
+            if(sendto(s,histobrief,histosize,0,sockrespond,socksize)==-1){
+                fprintf(stderr, "Failed to send history brief\n");
+                perror("sendto");
+                exit(EXIT_FAILURE);
+            }
+            printf("sendto passé.\n");
+            }
+            int sizepool = poolSize(ap);
+            //ICI boucle qui énumère toute les adresses du pool.
+            for (int i = 0; i < sizepool; ++i){
+            printf("envoi aux clients (%d)\n",sizepool);
             Handler_Struct* hs = malloc(sizeof(struct Handler_Struct*));
-			hs->addr = malloc(sizeof(struct sockaddr_in));
-			if(hs==NULL){
-				perror("hs");
-				exit(EXIT_FAILURE);
-			}
+            hs->addr = malloc(sizeof(struct sockaddr_in));
+            if(hs==NULL){
+                perror("hs");
+                exit(EXIT_FAILURE);
+            }
             struct sockaddr *ad = get_addr_at(ap, i);
-			if(ad==NULL){
-				exit(EXIT_FAILURE);
-			}
-			printf("getaddrat ok\n");
+            if(ad==NULL){
+                exit(EXIT_FAILURE);
+            }
+            printf("getaddrat ok\n");
             memcpy(hs->addr,ad,sizeof(struct sockaddr_in));
-			printf("memcpY ok\n");
+            printf("memcpY ok\n");
             strcpy(hs -> msg, m);
 
             hs->sockfd = s;
             printf("strcpy ok\n");
-			pthread_t thread;
+            pthread_t thread;
             pthread_detach(thread);
-			printf("detach state ok\n");
+            printf("detach state ok\n");
             if(pthread_create(&thread, NULL, &handler_pthread , hs) == -1) {
                 perror("pthread_create");
                 return EXIT_FAILURE;
