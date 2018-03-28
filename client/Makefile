@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wconversion -Werror -Wextra -Wpedantic -fPIC -D_POSIX_C_SOURCE=200112L
+CFLAGS = -Wall -Wconversion -Werror -Wextra -Wpedantic -fPIC -std=gnu99
 LDFLAGS = -pthread
 
 all: client
