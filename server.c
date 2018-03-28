@@ -111,6 +111,7 @@ int main(void) {
             }
             int sizepool = poolSize(ap);
             //ICI boucle qui énumère toute les adresses du pool.
+            printf("Taille du pool (%d)\n",sizepool);
             for (int i = 0; i < sizepool; ++i){
             printf("envoi aux clients (%d)\n",sizepool);
             Handler_Struct* hs = malloc(sizeof(struct Handler_Struct*));

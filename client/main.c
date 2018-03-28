@@ -16,7 +16,7 @@
 
 struct argument{
     int socket;
-    struct sockaddr *addr;
+    struct sockaddr_in *addr;
 };
 
 
@@ -25,9 +25,11 @@ void *run (void *arg) {
     while(1) {
         char mess[8196];
         socklen_t size;
+        size_t sizemsg = sizeof(8196);
         printf("Entrée dans le thread ok\n");
-        recvfrom(info_th -> socket, mess, sizeof(8196), 0, info_th -> addr, &size);
+        recvfrom(info_th -> socket, mess, sizemsg, 0, (struct sockaddr*)info_th -> addr, &size);
         printf("%s\n", mess);
+        printf("%d <- la TAILLE\n",(int)size);
     }
 }
 
@@ -62,9 +64,8 @@ int main() {
     }
 
     freeaddrinfo(res);
-    
-    
-    struct sockaddr *server_addr = res -> ai_addr;
+
+    struct sockaddr_in *server_addr = (struct sockaddr_in * )res -> ai_addr;
     //Préparation du thread de réception de message;
     struct argument *arg = malloc(sizeof(*arg));
     arg -> socket = s;
@@ -76,10 +77,11 @@ int main() {
 
     while(1) {
         char data[300];
+        //scanf("%99[^\n]", data);
         scanf("%s", data);
         char mess[350];
         sprintf(mess, "%s;%s", sendername, data);
-        sendto(s, mess, 350, 0, server_addr, sizeof(struct sockaddr_in));
+        sendto(s, mess, 350, 0, (struct sockaddr * )server_addr, sizeof(struct sockaddr_in));
     }
     return 0;
 
