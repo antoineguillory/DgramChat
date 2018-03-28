@@ -48,21 +48,21 @@ int main(void) {
     struct sockaddr_in server;
     server.sin_family = AF_INET;
     server.sin_port = htons(50000);
-    server.sin_addr.s_addr = INADDR_ANY;
-    if (bind(s, (struct sockaddr*) &server, sizeof(struct sockaddr)) == -1) {
+    server.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    if (bind(s, (struct sockaddr*) &server, sizeof(struct sockaddr_in)) == -1) {
         perror("bind");
         return EXIT_FAILURE;
     }
     addrpool *ap = init_pool();
-    for(;;) {
+    for( ; ; ) {
         //On reçoit le message
         char m[350];
         struct sockaddr_in addr_recept;
-        socklen_t *csize = malloc(sizeof(&addr_recept));
-        printf("j'attend un message...\n");
-        int retrecv = (int)recvfrom(s, m, sizeof(m), 0, (struct sockaddr*)&addr_recept, csize);
+        socklen_t slen = (socklen_t)sizeof(struct sockaddr_in);
+        size_t msize = sizeof(m);
+        int retrecv = (int)recvfrom(s, m, msize, 0, (struct sockaddr*)&addr_recept, &slen);
         printf("addresse = %s\n", inet_ntoa(addr_recept.sin_addr));
-        free(csize);
         if(retrecv==-1) {
             perror("retrecv");
             return EXIT_FAILURE;
@@ -91,7 +91,6 @@ int main(void) {
             if(histobrief==NULL){
                 fprintf(stderr, "Failed to retrieve history\n");
             }
-            
             
             printf("try to get addr...\n");
             struct sockaddr *sockrespond;
