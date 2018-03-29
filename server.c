@@ -96,6 +96,10 @@ int main(void) {
         char actualsender[50];
         char tmp[350];
         strcpy(tmp, m);
+		strcat(tmp,"\n");
+		if(put_entry(tmp)==-1) {
+			fprintf(stderr,"failed to put entry\n");
+		}
         char* token = strtok(tmp, ";");
         strcpy(actualsender, token);
         //On ajoute au pool l'écrivain si il n'y ai pas déjà
@@ -105,7 +109,6 @@ int main(void) {
             printf("on ajoute %s au pool\n", actualsender);
             putInPool(ap, actualsender, (struct sockaddr*) &addr_recept);
             //!!!TODO ENVOYER INFO (30 derniers messages)
-            
             //Récupération de l'historique pour l'envoyer a l'écrivain
             char* histobrief = get_history_brief();
             size_t histosize = strlen(histobrief);
@@ -130,51 +133,52 @@ int main(void) {
                 exit(EXIT_FAILURE);
             }
             printf("sendto passé with %d.\n", r);
-            }
-            int sizepool = poolSize(ap);
-            //ICI boucle qui énumère toute les adresses du pool.
-            printf("Taille du pool (%d)\n",sizepool);
-            for (int i = 0; i < sizepool; ++i){
-            printf("envoi aux clients (%d)\n",sizepool);
-            Handler_Struct* hs = malloc(sizeof(struct Handler_Struct*));
-            hs->addr = malloc(sizeof(struct sockaddr_in));
-            if(hs==NULL){
-                perror("hs");
-                exit(EXIT_FAILURE);
-            }
-            struct sockaddr *ad = get_addr_at(ap, i);
-            if(ad==NULL){
-                exit(EXIT_FAILURE);
-            }
-            printf("getaddrat ok\n");
-            memcpy(hs->addr,ad,sizeof(struct sockaddr_in));
-            printf("memcpY ok\n");
-            strcpy(hs -> msg, m);
+    	}
+        int sizepool = poolSize(ap);
+        //ICI boucle qui énumère toute les adresses du pool.
+        printf("Taille du pool (%d)\n",sizepool);
+        for (int i = 0; i < sizepool; ++i){
+		    printf("envoi aux clients (%d)\n",sizepool);
+		    Handler_Struct* hs = malloc(sizeof(struct Handler_Struct*));
+		    hs->addr = malloc(sizeof(struct sockaddr_in));
+		    if(hs==NULL){
+		        perror("hs");
+		        exit(EXIT_FAILURE);
+		    }
+		    struct sockaddr *ad = get_addr_at(ap, i);
+		    if(ad==NULL){
+		        exit(EXIT_FAILURE);
+		    }
+		    printf("getaddrat ok\n");
+		    memcpy(hs->addr,ad,sizeof(struct sockaddr_in));
+		    printf("memcpY ok\n");
+		    strcpy(hs -> msg, m);
 
-            hs->sockfd = s;
-            printf("strcpy ok\n");
-            //sizeof(struct sockaddr_in)
-            pthread_attr_t attr;
-            int errnum;
+		    hs->sockfd = s;
+		    printf("strcpy ok\n");
+		    //sizeof(struct sockaddr_in)
+		    pthread_attr_t attr;
+		    int errnum;
 			if ((errnum = pthread_attr_init(&attr)) != 0) {
 				fprintf(stderr, "pthread_attr_init: %s\n", strerror(errnum));
-			    exit(EXIT_FAILURE);
+				exit(EXIT_FAILURE);
 			}
-			    
+				
 			if ((errnum = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED)) != 0) {
-			    fprintf(stderr, "pthread_attr_setdetachstate: %s\n", strerror(errnum));
-			    exit(EXIT_FAILURE);
+				fprintf(stderr, "pthread_attr_setdetachstate: %s\n", strerror(errnum));
+				exit(EXIT_FAILURE);
 			}
 			  
-            pthread_t thread;
-            //pthread_detach(thread);
-            printf("detach state ok\n");
-            if(pthread_create(&thread, &attr, &handler_pthread , hs) == -1) {
-                perror("pthread_create");
-                return EXIT_FAILURE;
-            }
-        }
+		    pthread_t thread;
+		    //pthread_detach(thread);
+		    printf("detach state ok\n");
+		    if(pthread_create(&thread, &attr, &handler_pthread , hs) == -1) {
+		        perror("pthread_create");
+		        return EXIT_FAILURE;
+		    }
+        } // for
     }
+
     if (close(s) == -1) {
         perror("close");
         return EXIT_FAILURE;
