@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <pthread.h>
 #include "message.h"
+#include "prompt.h"
 
 #define CHOSEN_PORT "50000"
 
@@ -39,7 +40,7 @@ void *run (void *arg) {
 			mess[r] = '\0';
 		}
         
-        printf("%s\n", mess);
+        print_message(mess,r);
         printf("%d <- la TAILLE\n", (int) strlen(mess));
     }
 }
@@ -87,13 +88,14 @@ int main() {
     pthread_create(&th, &attr_th, run, arg);
 
     while(1) {
-        char data[300];
-        //scanf("%99[^\n]", data);
-        scanf("%s", data);
-        char mess[350];
-        sprintf(mess, "%s;%s", sendername, data);
-		printf("mess : %s\n",mess);
-        sendto(s, mess, 350, 0, (struct sockaddr * )server_addr, sizeof(struct sockaddr_in));
+		char mess[350];
+		char data[300];
+		fgets(data , 50, stdin);
+		 if ((strlen(data) > 0) && (data[strlen(data) - 1] == '\n')) {
+				data[strlen(data) - 1] = '\0';
+		}
+		sprintf(mess, "%s;%s", sendername, data);
+		sendto(s, mess, 350, 0, (struct sockaddr * )server_addr, sizeof(struct sockaddr_in));
     }
     return 0;
 
