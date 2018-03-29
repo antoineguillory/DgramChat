@@ -92,6 +92,7 @@ int main() {
         scanf("%s", data);
         char mess[350];
         sprintf(mess, "%s;%s", sendername, data);
+		printf("mess : %s\n",mess);
         sendto(s, mess, 350, 0, (struct sockaddr * )server_addr, sizeof(struct sockaddr_in));
     }
     return 0;
