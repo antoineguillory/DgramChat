@@ -14,7 +14,8 @@
 #include "prompt.h"
 
 #define CHOSEN_PORT "50000"
-#define NBADDR 0
+#define NBADDR 1
+
 
 struct argument{
     int socket;
@@ -46,11 +47,12 @@ void *run (void *arg) {
 }
 
 int main() {
-    uid_t id = geteuid();
+    /*uid_t id = geteuid();
     struct passwd *info = malloc(sizeof(*info));
     info = getpwuid(id);
     char sendername[50];
-    strcpy(sendername, info -> pw_name);
+    strcpy(sendername, info -> pw_name);*/
+    char sendername[50] = "Alpha";
 
     //Initialisation de la socket du client
     int s = socket(AF_INET, SOCK_DGRAM, 0);
@@ -67,11 +69,11 @@ int main() {
 	int addnb = 0;
 	for(struct ifaddrs *ifa = fap; ifa != NULL; ifa = ifa -> ifa_next) {
 		if (ifa -> ifa_addr == NULL) continue;
-		if (ifa -> ifa_addr -> sa_family == AF_INET || ifa -> ifa_addr -> sa_family == AF_INET6) {
+		if (ifa -> ifa_addr -> sa_family == AF_INET) {
 			if (addnb == NBADDR) {
 				cli_addr = ifa -> ifa_addr;
-				break;
 			} else {
+				printf("compute adresse..\n");
 				addnb++;
 			}
 		}
